@@ -1,0 +1,23 @@
+{
+  "name": "plexus-validate",
+  "version": "0.0.1",
+  "description": "A simple validator for a subset of JSON-Schema.",
+  "keywords": [
+    "JSON-Schema",
+    "validator"
+  ],
+  "homepage": "https://github.com/AppliedMathematicsANU/plexus-validate",
+  "bugs": {
+    "url": "https://github.com/AppliedMathematicsANU/plexus-validate/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Olaf Delgado-Friedrichs",
+    "email": "olaf.delgado@gmail.com"
+  },
+  "main": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AppliedMathematicsANU/plexus-validate.git"
+  }
+}
