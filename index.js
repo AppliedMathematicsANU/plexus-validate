@@ -70,6 +70,16 @@ validator.boolean = function(schema, instance) {
 };
 
 
+validator.enum = function(schema, instance) {
+  var errors = [];
+
+  if (schema.enum.indexOf(instance) < 0)
+    errors.push('value not in list');
+
+  return fieldErrors(errors);
+};
+
+
 validator.number = function(schema, instance) {
   var errors = [];
 
@@ -192,6 +202,8 @@ validator.object = function(schema, instance) {
 
 
 var validate = function(schema, instance) {
+  if (schema.enum)
+    return validator.enum(schema, instance);
   return validator[schema.type](schema, instance);
 };
 
