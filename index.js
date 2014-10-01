@@ -125,7 +125,7 @@ validator.string = function(schema, instance) {
 };
 
 
-validator.array = function(schema, instance) {
+validator.array = function(schema, instance, context) {
   var errors = [];
   var result, i, j;
 
@@ -140,7 +140,7 @@ validator.array = function(schema, instance) {
 
     if (schema.items != null) {
       for (i in instance) {
-        errors = validate(schema.items, instance[i]);
+        errors = validate(schema.items, instance[i], context);
         for (j in errors) {
           result.push({
             path  : [i].concat(errors[j].path),
@@ -169,7 +169,7 @@ var requires = function(schema, key) {
   }
 };
 
-validator.object = function(schema, instance) {
+validator.object = function(schema, instance, context) {
   var result = [];
   var key, errors, i;
 
@@ -181,7 +181,7 @@ validator.object = function(schema, instance) {
   else {
     for (key in schema.properties) {
       if (instance.hasOwnProperty(key)) {
-        errors = validate(schema.properties[key], instance[key]);
+        errors = validate(schema.properties[key], instance[key], context);
         for (i = 0; i < errors.length; ++i)
           result.push({
             path  : [key].concat(errors[i].path),
@@ -201,10 +201,31 @@ validator.object = function(schema, instance) {
 };
 
 
-var validate = function(schema, instance) {
-  if (schema.enum)
-    return validator.enum(schema, instance);
-  return validator[schema.type](schema, instance);
+var getIn = function(root, path) {
+  if (path.length == 0 || root == undefined)
+    return root;
+  else
+    return getIn(root[path[0]], path.slice(1))
+};
+
+
+var resolve = function(reference, context) {
+  if (!reference.match(/^#(\/([a-zA-Z_][a-zA-Z_0-9]*|[0-9]+))*$/))
+    throw new Error('reference '+reference+' has unsupported format');
+
+  return getIn(context, reference.split('/').slice(1));
+};
+
+
+var validate = function(schema, instance, context) {
+  if (schema['$ref'])
+    return validate(resolve(schema['$ref'], context),
+                    instance,
+                    context || schema);
+  else if (schema.enum)
+    return validator.enum(schema, instance, context);
+  else
+    return validator[schema.type](schema, instance, context);
 };
 
 module.exports = validate;
