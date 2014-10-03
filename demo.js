@@ -21,6 +21,7 @@ var schema = {
   "definitions": {
     "person": {
       "type": "object",
+      "required": [ "name" ],
       "properties": {
         "name": {
           "title": "Name",
@@ -36,10 +37,34 @@ var schema = {
   "title": "Testdata",
   "type": "object",
   "properties": {
-    "manager": { "$ref": "#/definitions/person" },
+    "manager": {
+      "title": "Manager",
+      "allOf": [
+        {
+          "type": "object",
+          "required": [ "group" ],
+          "properties": {
+            "group": {
+              "title": "Group",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "$ref": "#/definitions/person"
+        }
+      ]
+    },
     "employees": {
       "type" : "array",
-      "items": { "$ref": "#/definitions/person" }
+      "items": {
+        "title": "Employee",
+        "allOf": [
+          {
+            "$ref": "#/definitions/person"
+          }
+        ]
+      }
     }
   }
 };

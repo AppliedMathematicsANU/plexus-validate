@@ -201,11 +201,41 @@ validator.object = function(schema, instance, context) {
 };
 
 
+var merge = function() {
+  var args = [].slice.call(arguments);
+  var result = args.every(Array.isArray) ? [] : {};
+  var i, obj, key;
+  for (i in args) {
+    obj = args[i];
+    for (key in obj)
+      result[key] = obj[key];
+  }
+  return result;
+};
+
+
+var without = function(obj) {
+  var args = [].slice.call(arguments);
+  var result = Array.isArray(obj) ? [] : {};
+
+  for (var key in obj)
+    if (args.indexOf(key) < 0)
+      result[key] = obj[key];
+
+  return result;
+};
+
+
 var getIn = function(root, path) {
   if (path.length == 0 || root == undefined)
     return root;
   else
     return getIn(root[path[0]], path.slice(1))
+};
+
+
+var cat = function(arrayOfArrays) {
+  return [].concat.apply([], arrayOfArrays);
 };
 
 
@@ -227,7 +257,14 @@ var validate = function(schema, instance, context) {
   var effectiveSchema  = resolve(schema, effectiveContext);
   var effectiveType    = effectiveSchema.enum ? 'enum' : effectiveSchema.type;
 
-  return validator[effectiveType](effectiveSchema, instance, effectiveContext);
+  if (effectiveSchema.allOf) {
+    var base = without(effectiveSchema, 'allOf');
+    var results = effectiveSchema.allOf.map(function(schema) {
+      return validate(merge(base, schema), instance, effectiveContext);
+    });
+    return cat(results);
+  } else
+    return validator[effectiveType](effectiveSchema, instance, effectiveContext);
 };
 
 module.exports = validate;
