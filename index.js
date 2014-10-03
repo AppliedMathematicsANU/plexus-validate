@@ -209,23 +209,25 @@ var getIn = function(root, path) {
 };
 
 
-var resolve = function(reference, context) {
-  if (!reference.match(/^#(\/([a-zA-Z_][a-zA-Z_0-9]*|[0-9]+))*$/))
-    throw new Error('reference '+reference+' has unsupported format');
+var resolve = function(schema, context) {
+  var reference = schema['$ref'];
 
-  return getIn(context, reference.split('/').slice(1));
+  if (reference) {
+    if (!reference.match(/^#(\/([a-zA-Z_][a-zA-Z_0-9]*|[0-9]+))*$/))
+      throw new Error('reference '+reference+' has unsupported format');
+
+    return getIn(context, reference.split('/').slice(1));
+  } else
+    return schema;
 };
 
 
 var validate = function(schema, instance, context) {
-  if (schema['$ref'])
-    return validate(resolve(schema['$ref'], context),
-                    instance,
-                    context || schema);
-  else if (schema.enum)
-    return validator.enum(schema, instance, context);
-  else
-    return validator[schema.type](schema, instance, context);
+  var effectiveContext = context || schema;
+  var effectiveSchema  = resolve(schema, effectiveContext);
+  var effectiveType    = effectiveSchema.enum ? 'enum' : effectiveSchema.type;
+
+  return validator[effectiveType](effectiveSchema, instance, effectiveContext);
 };
 
 module.exports = validate;
