@@ -246,7 +246,8 @@ var resolve = function(schema, context) {
     if (!reference.match(/^#(\/([a-zA-Z_][a-zA-Z_0-9]*|[0-9]+))*$/))
       throw new Error('reference '+reference+' has unsupported format');
 
-    return getIn(context, reference.split('/').slice(1));
+    return merge(without(schema, '$ref'),
+                 getIn(context, reference.split('/').slice(1)));
   } else
     return schema;
 };
@@ -255,7 +256,6 @@ var resolve = function(schema, context) {
 var validate = function(schema, instance, context) {
   var effectiveContext = context || schema;
   var effectiveSchema  = resolve(schema, effectiveContext);
-  var effectiveType    = effectiveSchema.enum ? 'enum' : effectiveSchema.type;
 
   if (effectiveSchema.allOf) {
     var base = without(effectiveSchema, 'allOf');
@@ -263,8 +263,13 @@ var validate = function(schema, instance, context) {
       return validate(merge(base, schema), instance, effectiveContext);
     });
     return cat(results);
-  } else
-    return validator[effectiveType](effectiveSchema, instance, effectiveContext);
+  } else {
+    var type = effectiveSchema.enum ? 'enum' : effectiveSchema.type;
+    if (type)
+      return validator[type](effectiveSchema, instance, effectiveContext);
+    else
+      return [];
+  }
 };
 
 module.exports = validate;
