@@ -246,8 +246,12 @@ var resolve = function(schema, context) {
     if (!reference.match(/^#(\/([a-zA-Z_][a-zA-Z_0-9]*|[0-9]+))*$/))
       throw new Error('reference '+reference+' has unsupported format');
 
-    return merge(without(schema, '$ref'),
-                 getIn(context, reference.split('/').slice(1)));
+    return {
+      allOf: [
+        without(schema, '$ref'),
+        getIn(context, reference.split('/').slice(1))
+      ]
+    };
   } else
     return schema;
 };
@@ -258,10 +262,11 @@ var validate = function(schema, instance, context) {
   var effectiveSchema  = resolve(schema, effectiveContext);
 
   if (effectiveSchema.allOf) {
-    var base = without(effectiveSchema, 'allOf');
-    var results = effectiveSchema.allOf.map(function(schema) {
-      return validate(merge(base, schema), instance, effectiveContext);
-    });
+    var results = [without(effectiveSchema, 'allOf')]
+      .concat(effectiveSchema.allOf)
+      .map(function(schema) {
+        return validate(schema, instance, effectiveContext);
+      });
     return cat(results);
   } else {
     var type = effectiveSchema.enum ? 'enum' : effectiveSchema.type;
