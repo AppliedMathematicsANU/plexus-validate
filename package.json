@@ -1,6 +1,6 @@
 {
   "name": "plexus-validate",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A simple validator for a subset of JSON-Schema.",
   "keywords": [
     "JSON-Schema",
