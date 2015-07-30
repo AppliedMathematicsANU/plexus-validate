@@ -1,7 +1,14 @@
 {
   "name": "plexus-validate",
   "version": "0.0.4",
-  "description": "A simple validator for a subset of JSON-Schema.",
+    "description": "A simple validator for a subset of JSON-Schema.",
+  "scripts": {
+    "dist": "webpack --config ./config/webpack.dist.js && webpack --config ./config/webpack.dist.min.js"
+  },
+  "devDependencies": {
+    "webpack": "^1.6.0",
+    "xtend": "^4.0.0"
+  },
   "keywords": [
     "JSON-Schema",
     "validator"
